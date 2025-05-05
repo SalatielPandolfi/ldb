@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz Interativo - LDB</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f8;
+      margin: 0;
+      padding: 0;
+    }
+    header, footer {
+      background-color: #004080;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+    main {
+      max-width: 800px;
+      margin: 20px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    h2 {
+      color: #004080;
+    }
+    .question {
+      margin-bottom: 20px;
+    }
+    .question p {
+      font-weight: bold;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #004080;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0066cc;
+    }
+    .result {
+      font-weight: bold;
+      margin-top: 20px;
+    }
+    .ranking {
+      margin-top: 30px;
+      padding: 10px;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Quiz Interativo: Lei de Diretrizes e Bases da Educação Nacional (LDB)</h1>
+  </header>
+
+  <main>
+    <div id="start">
+      <label for="playerName">Digite seu nome:</label><br>
+      <input type="text" id="playerName">
+      <br><br>
+      <button onclick="startQuiz()">Iniciar Quiz</button>
+    </div>
+
+    <div id="quiz" style="display: none;"></div>
+    <div id="score" class="result"></div>
+    <div class="ranking">
+      <h2>Ranking</h2>
+      <ol id="rankingList"></ol>
+    </div>
+  </main>
+
+  <footer>
+    &copy; 2025 | Quiz baseado na LDB - Lei nº 9.394/1996
+  </footer>
+
+  <script>
+    const questions = [
+      // Fundamentos e Princípios
+      { topic: "Fundamentos", question: "Qual o objetivo da educação segundo o Art. 2º da LDB?", options: ["Preparar para o vestibular", "Pleno desenvolvimento do educando", "Garantir disciplina em sala"], answer: 1 },
+      { topic: "Fundamentos", question: "Qual princípio garante liberdade de ensinar e aprender?", options: ["Pluralismo", "Igualdade", "Liberdade de ensino"], answer: 2 },
+      { topic: "Fundamentos", question: "A gestão democrática é um princípio presente na...", options: ["BNCC", "LDB", "Plano de aula"], answer: 1 },
+      { topic: "Fundamentos", question: "O que a LDB garante sobre inclusão?", options: ["Apenas para escolas privadas", "Apenas no ensino superior", "Direito de todos à educação inclusiva"], answer: 2 },
+      { topic: "Fundamentos", question: "Qual valor está relacionado à tolerância e diversidade?", options: ["Respeito", "Rendimento", "Reprovação"], answer: 0 },
+      // Organização da Educação
+      { topic: "Organização", question: "Quantos anos dura o ensino fundamental?", options: ["8 anos", "9 anos", "10 anos"], answer: 1 },
+      { topic: "Organização", question: "A BNCC é parte de qual nível de ensino?", options: ["Educação básica", "Ensino superior", "Educação informal"], answer: 0 },
+      { topic: "Organização", question: "A LDB permite qual tipo de organização?", options: ["Apenas por séries", "Flexível conforme necessidade", "Sem regulamentação"], answer: 1 },
+      { topic: "Organização", question: "A autonomia universitária permite...", options: ["Alterar impostos", "Gerir seus currículos", "Fechar escolas"], answer: 1 },
+      { topic: "Organização", question: "Quem garante o acesso de 4 a 17 anos?", options: ["A escola", "A BNCC", "Estado, municípios e União"], answer: 2 },
+      // Profissionais
+      { topic: "Profissionais", question: "Qual é a formação mínima exigida para o magistério?", options: ["Médio", "Licenciatura", "Técnico"], answer: 1 },
+      { topic: "Profissionais", question: "A valorização docente inclui...", options: ["Premiações anuais", "Plano de carreira", "Liberação de provas"], answer: 1 },
+      { topic: "Profissionais", question: "Quem compõe o conselho escolar?", options: ["Apenas diretores", "Todos os segmentos", "Secretaria de Educação"], answer: 1 },
+      { topic: "Profissionais", question: "O diretor escolar deve liderar...", options: ["Somente tarefas administrativas", "Gestão pedagógica e institucional", "Compras e estoque"], answer: 1 },
+      { topic: "Profissionais", question: "PPP significa...", options: ["Plano Pedagógico Provisório", "Projeto Político-Pedagógico", "Programa Público Pedagógico"], answer: 1 },
+      // Implicações
+      { topic: "Implicações", question: "A avaliação segundo a LDB deve ser...", options: ["Somente final", "Formativa e contínua", "Feita por terceiros"], answer: 1 },
+      { topic: "Implicações", question: "A LDB influencia políticas como...", options: ["ENEM", "ProUni e Fundeb", "IBGE"], answer: 1 },
+      { topic: "Implicações", question: "A autonomia do professor está garantida em...", options: ["Projeto de Lei", "LDB", "Conselho Tutelar"], answer: 1 },
+      { topic: "Implicações", question: "A diversidade em sala exige...", options: ["Uniformidade metodológica", "Aulas padronizadas", "Práticas pedagógicas inclusivas"], answer: 2 },
+      { topic: "Implicações", question: "O PNE é orientado pela...", options: ["BNCC", "LDB", "Constituição"], answer: 1 }
+    ];
+
+    let current = 0;
+    let score = 0;
+    let player = "";
+    const ranking = [];
+
+    function startQuiz() {
+      player = document.getElementById('playerName').value.trim();
+      if (!player) {
+        alert("Por favor, digite seu nome.");
+        return;
+      }
+      document.getElementById('start').style.display = 'none';
+      document.getElementById('quiz').style.display = 'block';
+      showQuestion();
+    }
+
+    function showQuestion() {
+      if (current >= questions.length) {
+        document.getElementById('quiz').innerHTML = `<h2>Parabéns, ${player}!</h2><p>Você fez ${score} de ${questions.length} pontos.</p>`;
+        ranking.push({ name: player, points: score });
+        ranking.sort((a, b) => b.points - a.points);
+        updateRanking();
+        return;
+      }
+      const q = questions[current];
+      const div = document.getElementById('quiz');
+      div.innerHTML = `<div class="question">
+        <h2>${q.topic}</h2>
+        <p>${q.question}</p>
+        ${q.options.map((opt, i) => `<button onclick="checkAnswer(${i})">${opt}</button>`).join('<br>')}
+      </div>`;
+    }
+
+    function checkAnswer(selected) {
+      if (selected === questions[current].answer) {
+        score++;
+      }
+      current++;
+      showQuestion();
+    }
+
+    function updateRanking() {
+      const list = document.getElementById('rankingList');
+      list.innerHTML = '';
+      ranking.slice(0, 10).forEach((entry, index) => {
+        const li = document.createElement('li');
+        li.textContent = `${index + 1}. ${entry.name} - ${entry.points} pts`;
+        list.appendChild(li);
+      });
+    }
+  </script>
+</body>
+</html>
